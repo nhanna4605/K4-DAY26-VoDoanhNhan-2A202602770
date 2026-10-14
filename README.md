@@ -1,7 +1,7 @@
 # Bài nộp Day 26 — Võ Doanh Nhân (MSSV 2A202602770)
 
 Repo cá nhân `K4-DAY26-VoDoanhNhan-2A202602770`, fork từ `VinUni-AI20k/Day26-MCP-Tools-Integration`.
-Chạy trên Windows 11, Python 3.12.10, Git Bash; MCP SDK 2.3.0 (bước 01–03), `uv` 0.13.1 (Lab 04), Google ADK 2.3.0.
+Chạy trên Windows 11, Python 3.12.10 (Windows PowerShell 5.1 / Git Bash); MCP SDK 2.3.0 (bước 01–03), `uv` 0.13.1 (Lab 04), Google ADK 2.3.0.
 Ngày chạy: 14/10/2026. Không có API key nào trong repo hay trong ảnh (`.env` đã bị gitignore).
 
 | Bước | Ảnh | Kết quả chính |
@@ -16,15 +16,22 @@ Ngày chạy: 14/10/2026. Không có API key nào trong repo hay trong ảnh (`.
 
 Ghi chú trung thực về cách làm:
 
-- **Ảnh terminal (01–03, 04-verify-setup)** được dựng từ output thật đã lưu của từng lệnh (chạy trong Git Bash, đúng
-  lệnh ghi trên ảnh), không phải ảnh chụp cửa sổ terminal. Trong `04-verify-setup` phần đầu key Gemini mà
-  `verify_setup.py` in ra đã được che.
+- **Ảnh terminal (01–03, 04-verify-setup)** là ảnh chụp thật cửa sổ Windows PowerShell (conhost) đang chạy đúng lệnh
+  trên ảnh, chụp bằng Windows API `PrintWindow`. `PowerShell -Command` không tự in lệnh đang chạy, nên dòng
+  `(.venv) PS ...> python ...` đầu tiên được in ra bằng `Write-Host (prompt)` ngay trước lệnh thật; dòng prompt cuối là prompt
+  thật của PowerShell. Chỉ chỉnh cách hiển thị: cỡ chữ Consolas 14 cho cửa sổ đó, và bật hiển thị màu ANSI để log
+  uvicorn không hiện ký tự điều khiển.
+- Ảnh nhiều phần là các ảnh chụp thật của cùng một lần chạy được ghép dọc: `03a-auth-ok` (client + cửa sổ server),
+  `03a-auth-fail` (client cuộn lên đầu + cuộn xuống cuối, vì traceback dài hơn màn hình + cửa sổ server có dòng
+  `401 Unauthorized`), `04-verify-setup` (cửa sổ server + cửa sổ `verify_setup.py`). Trong `04-verify-setup`, phần đầu key
+  Gemini mà `verify_setup.py` in ra đã được che.
 - **Ảnh ADK (04-adk-current, 04-adk-forecast)** là ảnh chụp thật giao diện `adk web` (Chrome headless mở đúng phiên chat
   vừa hỏi).
 - **Sửa 1 dòng code:** `03-production/registry_client.py` mở `registry.json` không chỉ định encoding, nên trên Windows
   (mặc định cp1252) báo `UnicodeDecodeError`. Đã thêm `encoding="utf-8"`; không đổi logic.
-- **Server bước 4** được khởi động nền với `PORT=8085`: `weather.py` chỉ chọn Streamable HTTP khi có `PORT` hoặc stdin là
-  terminal tương tác. Server in đúng ba dòng mong đợi, kể cả `🚀 Starting MCP server on http://0.0.0.0:8085/mcp`.
+- **Server bước 4:** ảnh `04-verify-setup` chụp server chạy trong cửa sổ PowerShell thật (stdin là terminal nên server tự
+  chọn Streamable HTTP, in đủ ba dòng mong đợi). Lúc chụp hai ảnh ADK, server được chạy nền với `PORT=8085`, vì khi
+  không có terminal tương tác thì `weather.py` chỉ chọn Streamable HTTP nếu có biến `PORT`.
 - **Câu hỏi dự báo:** câu mẫu "3-day forecast for Tokyo" bị agent từ chối, vì docstring của `get_forecast` chỉ liệt kê
   các thành phố ví dụ (Hanoi, Haiphong, Danang, Brisbane, Sydney, Melbourne) và Gemini hiểu đó là danh sách giới hạn. Giữ
   nguyên code, hỏi dự báo cho Hà Nội (đề cho phép).
