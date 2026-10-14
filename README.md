@@ -1,3 +1,37 @@
+# Bài nộp Day 26 — Võ Doanh Nhân (MSSV 2A202602770)
+
+Repo cá nhân `K4-DAY26-VoDoanhNhan-2A202602770`, fork từ `VinUni-AI20k/Day26-MCP-Tools-Integration`.
+Chạy trên Windows 11, Python 3.12.10, Git Bash; MCP SDK 2.3.0 (bước 01–03), `uv` 0.13.1 (Lab 04), Google ADK 2.3.0.
+Ngày chạy: 14/10/2026. Không có API key nào trong repo hay trong ảnh (`.env` đã bị gitignore).
+
+| Bước | Ảnh | Kết quả chính |
+|---|---|---|
+| 1 Function Calling | `screenshots/01-function-calling.png` | 2 cặp `[model yêu cầu]` / `[app thực thi]` (Hà Nội, Đà Nẵng) và câu trả lời của Gemini |
+| 2 MCP client (stdio) | `screenshots/02-mcp-client.png` | `list_tools()` thấy `get_weather` + 3 lần `call_tool`, khớp output mẫu |
+| 3a Auth | `screenshots/03a-auth-ok.png`, `03a-auth-fail.png` | Token mặc định: có tool và kết quả; token sai: server trả `401 Unauthorized`, client không lấy được tool |
+| 3b Registry | `screenshots/03b-registry.png` | Tìm thấy 2 tool tag `weather`, best match `get_weather_v2 v2.0.0` |
+| 3c Versioning | `screenshots/03c-versioning.png` | `weather-v2 v2.0.0`, deprecated `['get_weather']`, v1 trả chuỗi, v2 trả JSON `api_version 2.0` |
+| 4 Server + verify | `screenshots/04-verify-setup.png` | Server WeatherAPI ở `:8085/mcp`; `verify_setup.py`: ✅ All checks passed! |
+| 5 ADK agent | `screenshots/04-adk-current.png`, `04-adk-forecast.png` | Brisbane hiện tại (cảm giác như, độ ẩm, UV, last updated) và dự báo 3 ngày Hà Nội, đều qua tool MCP |
+
+Ghi chú trung thực về cách làm:
+
+- **Ảnh terminal (01–03, 04-verify-setup)** được dựng từ output thật đã lưu của từng lệnh (chạy trong Git Bash, đúng
+  lệnh ghi trên ảnh), không phải ảnh chụp cửa sổ terminal. Trong `04-verify-setup` phần đầu key Gemini mà
+  `verify_setup.py` in ra đã được che.
+- **Ảnh ADK (04-adk-current, 04-adk-forecast)** là ảnh chụp thật giao diện `adk web` (Chrome headless mở đúng phiên chat
+  vừa hỏi).
+- **Sửa 1 dòng code:** `03-production/registry_client.py` mở `registry.json` không chỉ định encoding, nên trên Windows
+  (mặc định cp1252) báo `UnicodeDecodeError`. Đã thêm `encoding="utf-8"`; không đổi logic.
+- **Server bước 4** được khởi động nền với `PORT=8085`: `weather.py` chỉ chọn Streamable HTTP khi có `PORT` hoặc stdin là
+  terminal tương tác. Server in đúng ba dòng mong đợi, kể cả `🚀 Starting MCP server on http://0.0.0.0:8085/mcp`.
+- **Câu hỏi dự báo:** câu mẫu "3-day forecast for Tokyo" bị agent từ chối, vì docstring của `get_forecast` chỉ liệt kê
+  các thành phố ví dụ (Hanoi, Haiphong, Danang, Brisbane, Sydney, Melbourne) và Gemini hiểu đó là danh sách giới hạn. Giữ
+  nguyên code, hỏi dự báo cho Hà Nội (đề cho phép).
+- Phần tùy chọn Cloud Run (`05-cloud-run.png`) không làm.
+
+---
+
 # Phân biệt MCP và Function Calling
 
 Đây là hai khái niệm hay bị nhầm lẫn nhưng thực ra ở **hai tầng khác nhau**, và **bổ sung cho nhau** chứ không thay thế.
